@@ -21,7 +21,6 @@
   --muted:#666;
   --muted2:#3a3a3a;
   --red:#ff4444;
-  --yellow:#FFD700;
 }
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:rgba(7,7,7,0.98);position:sticky;top:0;z-index:50}
@@ -102,7 +101,6 @@ textarea{min-height:90px;line-height:1.6}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{border-color:var(--neon);color:var(--neon)}
 .toast.err{border-color:var(--red);color:var(--red)}
-/* Schedule queue */
 .schedule-row{display:flex;gap:8px;align-items:stretch}
 .schedule-row input{flex:1}
 .queue-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
@@ -135,7 +133,6 @@ textarea{min-height:90px;line-height:1.6}
 </header>
 
 <div class="workspace">
-  <!-- LEFT COLUMN -->
   <div style="display:flex;flex-direction:column;gap:16px">
 
     <div class="panel">
@@ -199,7 +196,6 @@ textarea{min-height:90px;line-height:1.6}
     </div>
   </div>
 
-  <!-- RIGHT COLUMN -->
   <div style="display:flex;flex-direction:column;gap:16px">
 
     <div class="panel">
@@ -245,7 +241,6 @@ textarea{min-height:90px;line-height:1.6}
       </div>
     </div>
 
-    <!-- PUBLICAR PANEL -->
     <div class="panel">
       <div class="panel-head"><div class="panel-title">Publicar no Facebook</div></div>
       <div class="panel-body">
@@ -270,7 +265,6 @@ textarea{min-height:90px;line-height:1.6}
   </div>
 </div>
 
-<!-- CONFIG MODAL -->
 <div class="overlay" id="cfgOverlay" onclick="closeCfgOutside(event)">
   <div class="modal">
     <div class="modal-header">
@@ -290,7 +284,7 @@ textarea{min-height:90px;line-height:1.6}
     <div class="field">
       <div class="label">Page Access Token</div>
       <input type="password" id="cfgFbToken" placeholder="EAAxxxxx...">
-      <span style="font-size:11px;color:var(--muted);margin-top:4px">Gere em developers.facebook.com → Graph API Explorer → permissão pages_manage_posts</span>
+      <span style="font-size:11px;color:var(--muted);margin-top:4px">Permissão necessária: pages_manage_posts + pages_read_engagement</span>
     </div>
     <div class="field">
       <div class="label">Page ID</div>
@@ -306,7 +300,7 @@ textarea{min-height:90px;line-height:1.6}
 <script>
 let cfg = {
   key: '',
-  tom: 'Canal de curiosidades e tecnologia. Linguagem direta, acessível, sem termos técnicos complexos. Público brasileiro curioso por novidades.',
+  tom: 'Canal de curiosidades, tecnologia e comportamento. Linguagem direta, acessível, público brasileiro.',
   fbToken: '',
   fbPageId: '61575160303174'
 };
@@ -316,20 +310,19 @@ let bgImageEl = null;
 let currentPost = null;
 let activeTab = 'link';
 
-// ── Schedule queue ──────────────────────────────────────────
+// ── Queue ──────────────────────────────────────────────────
 let queue = [];
 try { queue = JSON.parse(localStorage.getItem('fd3_queue') || '[]'); } catch(e){}
 
-// Set datetime-local min to now
-(function setDateMin() {
+(function() {
   const el = document.getElementById('scheduleTime');
-  const now = new Date(Date.now() + 5 * 60000); // +5min
+  const now = new Date(Date.now() + 5 * 60000);
   el.min = now.toISOString().slice(0, 16);
   el.value = now.toISOString().slice(0, 16);
 })();
 
 function saveQueue() {
-  try { localStorage.setItem('fd3_queue', JSON.stringify(queue)); } catch(e) {}
+  try { localStorage.setItem('fd3_queue', JSON.stringify(queue)); } catch(e){}
 }
 
 function renderQueue() {
@@ -337,156 +330,132 @@ function renderQueue() {
   const empty = document.getElementById('queueEmpty');
   const countEl = document.getElementById('queueCount');
   const pending = queue.filter(q => q.status !== 'done');
-
   countEl.textContent = pending.length ? `(${pending.length})` : '';
-
   list.querySelectorAll('.queue-item').forEach(el => el.remove());
-
-  if (!pending.length) {
-    empty.style.display = 'block';
-    return;
-  }
+  if (!pending.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-
   pending.forEach(item => {
     const d = new Date(item.time);
-    const timeStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' +
-                    d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const titleClean = (item.post.title || '').replace(/\*([^*]+)\*/g, '$1').replace(/\\n|\n/g, ' ');
+    const timeStr = d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' ' +
+                    d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    const titleClean = (item.post.title||'').replace(/\*([^*]+)\*/g,'$1').replace(/\\n|\n/g,' ');
     const div = document.createElement('div');
     div.className = 'queue-item';
     div.id = 'qi_' + item.id;
-    const badgeMap = { pending: 'aguardando', posting: 'publicando…', done: 'publicado', error: 'erro' };
+    const badges = {pending:'aguardando',posting:'publicando…',done:'publicado',error:'erro'};
     div.innerHTML = `
       <div class="queue-item-info">
         <div class="queue-item-time">${timeStr}</div>
         <div class="queue-item-title">${titleClean}</div>
       </div>
-      <span class="queue-badge ${item.status}">${badgeMap[item.status] || item.status}</span>
-      ${item.status !== 'posting' ? `<button class="queue-del" onclick="removeFromQueue(${item.id})" title="Remover">×</button>` : ''}
+      <span class="queue-badge ${item.status}">${badges[item.status]||item.status}</span>
+      ${item.status!=='posting'?`<button class="queue-del" onclick="removeFromQueue(${item.id})">×</button>`:''}
     `;
     list.appendChild(div);
   });
 }
 
 function addToQueue() {
-  if (!currentPost) { toast('Gere o post primeiro', 'err'); return; }
-  const timeInput = document.getElementById('scheduleTime').value;
-  if (!timeInput) { toast('Selecione data e hora', 'err'); return; }
-  const schedTime = new Date(timeInput).getTime();
-  if (schedTime <= Date.now()) { toast('Escolha um horário futuro', 'err'); return; }
+  if (!currentPost) { toast('Gere o post primeiro','err'); return; }
+  const t = document.getElementById('scheduleTime').value;
+  if (!t) { toast('Selecione data e hora','err'); return; }
+  const schedTime = new Date(t).getTime();
+  if (schedTime <= Date.now()) { toast('Escolha um horário futuro','err'); return; }
   const canvas = document.getElementById('cardCanvas');
-  if (canvas.style.display === 'none') { toast('Gere o card visual primeiro', 'err'); return; }
-
-  setLoading(true, 'Adicionando à fila...');
+  if (canvas.style.display==='none') { toast('Gere o card visual primeiro','err'); return; }
+  setLoading(true,'Adicionando à fila...');
   setTimeout(() => {
     try {
       const imageData = canvas.toDataURL('image/jpeg', 0.88);
-      queue.push({ id: Date.now(), time: schedTime, post: { ...currentPost }, imageData, status: 'pending' });
-      queue.sort((a, b) => a.time - b.time);
-      saveQueue();
-      renderQueue();
-      toast('Adicionado à fila!', 'ok');
-    } finally {
-      setLoading(false);
-    }
+      queue.push({id:Date.now(), time:schedTime, post:{...currentPost}, imageData, status:'pending'});
+      queue.sort((a,b) => a.time - b.time);
+      saveQueue(); renderQueue();
+      toast('Adicionado à fila!','ok');
+    } finally { setLoading(false); }
   }, 80);
 }
 
 function removeFromQueue(id) {
   queue = queue.filter(q => q.id !== id);
-  saveQueue();
-  renderQueue();
+  saveQueue(); renderQueue();
 }
 
-function dataURLToBlob(dataURL) {
-  const [head, data] = dataURL.split(',');
-  const mime = head.match(/:(.*?);/)[1];
-  const bin = atob(data);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return new Blob([arr], { type: mime });
-}
-
+// ── Facebook via backend proxy ─────────────────────────────
 async function publishItem(item) {
-  if (!cfg.fbToken || !cfg.fbPageId) throw new Error('Configure Facebook Token e Page ID em ⚙');
-  const blob = dataURLToBlob(item.imageData);
-  const form = new FormData();
-  form.append('source', blob, 'fontedadica.jpg');
-  form.append('caption', item.post.caption + '\n\n' + item.post.hashtags);
-  form.append('access_token', cfg.fbToken);
-  const res = await fetch(`https://graph.facebook.com/v19.0/${cfg.fbPageId}/photos`, { method: 'POST', body: form });
+  if (!cfg.fbToken || !cfg.fbPageId) throw new Error('Configure o Facebook Token e Page ID em ⚙');
+  const res = await fetch('/api/fb-post', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageBase64: item.imageData,
+      caption: item.post.caption + '\n\n' + item.post.hashtags,
+      accessToken: cfg.fbToken,
+      pageId: cfg.fbPageId
+    })
+  });
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (!res.ok || data.error) throw new Error(data.error || 'Erro ao publicar no Facebook');
   return data;
 }
 
-// Check queue every 30s
 setInterval(async () => {
   const now = Date.now();
   for (const item of queue) {
     if (item.status !== 'pending') continue;
     if (item.time > now + 30000) continue;
-    item.status = 'posting';
-    renderQueue();
+    item.status = 'posting'; renderQueue();
     try {
       await publishItem(item);
       item.status = 'done';
-      toast('✅ Post agendado publicado!', 'ok');
+      toast('✅ Post agendado publicado!','ok');
     } catch(e) {
       item.status = 'error';
-      toast('Erro no agendado: ' + e.message, 'err');
+      toast('Erro no agendado: ' + e.message,'err');
     }
-    saveQueue();
-    renderQueue();
+    saveQueue(); renderQueue();
   }
 }, 30000);
 
 async function postNow() {
-  if (!currentPost) { toast('Gere o post primeiro', 'err'); return; }
+  if (!currentPost) { toast('Gere o post primeiro','err'); return; }
   const canvas = document.getElementById('cardCanvas');
-  if (canvas.style.display === 'none') { toast('Gere o card visual primeiro', 'err'); return; }
-  if (!cfg.fbToken || !cfg.fbPageId) { toast('Configure Facebook em ⚙', 'err'); openCfg(); return; }
-
+  if (canvas.style.display==='none') { toast('Gere o card visual primeiro','err'); return; }
+  if (!cfg.fbToken || !cfg.fbPageId) { toast('Configure Facebook em ⚙','err'); openCfg(); return; }
   const btn = document.getElementById('fbPostBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Publicando...';
-
+  btn.disabled = true; btn.textContent = '⏳ Publicando...';
   try {
     const imageData = canvas.toDataURL('image/jpeg', 0.92);
     await publishItem({ imageData, post: currentPost });
-    toast('✅ Publicado no Facebook!', 'ok');
+    toast('✅ Publicado no Facebook!','ok');
   } catch(e) {
-    toast('Erro: ' + e.message, 'err');
+    toast('Erro: ' + e.message,'err');
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = '📤 Publicar agora';
+    btn.disabled = false; btn.innerHTML = '📤 Publicar agora';
   }
 }
 
 renderQueue();
 
-// ── Tabs ────────────────────────────────────────────────────
+// ── Tabs ───────────────────────────────────────────────────
 function setTab(tab) {
   activeTab = tab;
-  ['link', 'text', 'tema'].forEach(t => {
-    document.getElementById('pane-' + t).style.display = t === tab ? 'flex' : 'none';
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  ['link','text','tema'].forEach(t => {
+    document.getElementById('pane-'+t).style.display = t===tab ? 'flex' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
   });
 }
 
-// ── Image upload ────────────────────────────────────────────
+// ── Upload ─────────────────────────────────────────────────
 function handleFile(input) {
   const file = input.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file);
   const preview = document.getElementById('uploadPreview');
-  preview.src = url;
-  preview.style.display = 'block';
+  preview.src = url; preview.style.display = 'block';
   const img = new Image();
   img.onload = () => { bgImageEl = img; if (currentPost) renderCard(currentPost); };
   img.src = url;
-  toast('Imagem carregada', 'ok');
+  toast('Imagem carregada','ok');
 }
 
 const zone = document.getElementById('uploadZone');
@@ -501,53 +470,39 @@ zone.addEventListener('drop', e => {
   }
 });
 
-// ── Facebook fetch ──────────────────────────────────────────
+// ── Facebook fetch ─────────────────────────────────────────
 async function fetchFbPost() {
   const link = document.getElementById('fbLink').value.trim();
-  if (!link) { toast('Cole o link do post', 'err'); return; }
-  if (!cfg.fbToken) { toast('Configure o Facebook Token em ⚙', 'err'); openCfg(); return; }
-
+  if (!link) { toast('Cole o link do post','err'); return; }
+  if (!cfg.fbToken) { toast('Configure o Facebook Token em ⚙','err'); openCfg(); return; }
   const btn = document.getElementById('fetchBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Buscando...';
-
+  btn.disabled = true; btn.textContent = '⏳ Buscando...';
   try {
     const postId = extractPostId(link);
-    if (!postId) throw new Error('Formato de link não reconhecido. Use o link direto do post.');
-
-    const res = await fetch(
-      `https://graph.facebook.com/v19.0/${postId}?fields=message,story,full_picture&access_token=${cfg.fbToken}`
-    );
+    if (!postId) throw new Error('Formato de link não reconhecido.');
+    const res = await fetch(`https://graph.facebook.com/v19.0/${postId}?fields=message,story,full_picture&access_token=${cfg.fbToken}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-
     const text = data.message || data.story || '';
-    if (!text) throw new Error('Post sem texto ou sem permissão de acesso');
-
+    if (!text) throw new Error('Post sem texto ou sem permissão');
     document.getElementById('fetchText').textContent = text;
     document.getElementById('fetchResult').style.display = 'block';
     if (data.full_picture && !bgImageEl) loadImageFromUrl(data.full_picture);
-    toast('Conteúdo encontrado!', 'ok');
+    toast('Conteúdo encontrado!','ok');
   } catch(e) {
-    toast('Erro: ' + e.message, 'err');
+    toast('Erro: '+e.message,'err');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '⬇ Buscar texto do post';
+    btn.disabled = false; btn.textContent = '⬇ Buscar texto do post';
   }
 }
 
 function extractPostId(url) {
   let m;
-  m = url.match(/story_fbid=(\d+).*?[&?]id=(\d+)/);
-  if (m) return `${m[2]}_${m[1]}`;
-  m = url.match(/[&?]id=(\d+).*?story_fbid=(\d+)/);
-  if (m) return `${m[1]}_${m[2]}`;
-  m = url.match(/\/posts\/(\d+)/);
-  if (m) return m[1];
-  m = url.match(/fbid=(\d+)/);
-  if (m) return m[1];
-  m = url.match(/\/(\d{10,})/);
-  if (m) return m[1];
+  m = url.match(/story_fbid=(\d+).*?[&?]id=(\d+)/); if (m) return `${m[2]}_${m[1]}`;
+  m = url.match(/[&?]id=(\d+).*?story_fbid=(\d+)/); if (m) return `${m[1]}_${m[2]}`;
+  m = url.match(/\/posts\/(\d+)/); if (m) return m[1];
+  m = url.match(/fbid=(\d+)/); if (m) return m[1];
+  m = url.match(/\/(\d{10,})/); if (m) return m[1];
   return null;
 }
 
@@ -558,40 +513,38 @@ function loadImageFromUrl(url) {
     bgImageEl = img;
     const p = document.getElementById('uploadPreview');
     p.src = url; p.style.display = 'block';
-    toast('Imagem do post carregada', 'ok');
+    toast('Imagem carregada','ok');
   };
   img.src = url;
 }
 
 function getInputText() {
-  if (activeTab === 'link') {
+  if (activeTab==='link') {
     const fetched = document.getElementById('fetchText').textContent;
     if (fetched) return fetched;
     const link = document.getElementById('fbLink').value.trim();
-    return link ? `Link do post: ${link}` : '';
+    return link ? `Link: ${link}` : '';
   }
-  if (activeTab === 'text') return document.getElementById('originalText').value.trim();
-  if (activeTab === 'tema') return document.getElementById('temaText').value.trim();
+  if (activeTab==='text') return document.getElementById('originalText').value.trim();
+  if (activeTab==='tema') return document.getElementById('temaText').value.trim();
   return '';
 }
 
-// ── Generate ────────────────────────────────────────────────
+// ── Generate ───────────────────────────────────────────────
 async function generate() {
   const text = getInputText();
-  if (!text) { toast('Adicione o conteúdo ou tema', 'err'); return; }
-  if (!cfg.key) { toast('Configure a API Key ⚙', 'err'); openCfg(); return; }
-
-  setLoading(true, 'Gerando com IA...');
+  if (!text) { toast('Adicione o conteúdo ou tema','err'); return; }
+  if (!cfg.key) { toast('Configure a API Key ⚙','err'); openCfg(); return; }
+  setLoading(true,'Gerando com IA...');
   document.getElementById('genBtn').disabled = true;
-
   try {
     const result = await callClaude(text);
     currentPost = result;
     showResult(result);
     if (bgImageEl) renderCard(result);
-    else toast('Adicione a imagem para gerar o card visual', 'err');
+    else toast('Adicione a imagem para gerar o card','err');
   } catch(e) {
-    toast('Erro: ' + e.message, 'err');
+    toast('Erro: '+e.message,'err');
   } finally {
     setLoading(false);
     document.getElementById('genBtn').disabled = false;
@@ -599,20 +552,32 @@ async function generate() {
 }
 
 async function callClaude(originalText) {
-  const prompt = `Você é o criador de conteúdo do canal @fontedadica no Facebook.
-Tom do canal: ${cfg.tom}
+  const prompt = `Você é o editor do canal @fontedadica no Facebook. Tom: ${cfg.tom}
 
-Conteúdo/tema para transformar em post:
+Conteúdo de referência:
 ---
 ${originalText}
 ---
 
-Crie um post com:
-1. "title": Título impactante para o card visual. MÁXIMO 3 linhas. CAIXA ALTA. Use *palavra* para marcar 2-3 palavras-chave em VERDE NEON. Separe linhas com \\n. Ex: "NA ITÁLIA *PETS* DOENTES\\nSÃO *EMERGÊNCIA* FAMILIAR"
-2. "caption": Legenda Facebook (200-300 caracteres). Tom conversacional, emojis, sem hashtags. Termine com pergunta ao leitor.
-3. "hashtags": 8 hashtags, sempre começando com #fontedadica
+Gere um post com estas regras ESTRITAS:
 
-Responda APENAS JSON válido sem markdown:
+1. "title": Título para o card visual.
+   - CAIXA ALTA obrigatório
+   - MÁXIMO 2 linhas (separe com \\n)
+   - Cada linha: no máximo 5 palavras
+   - Seja DIRETO e CHOCANTE — o leitor deve parar o scroll
+   - Use *palavra* para destacar em VERDE 1-2 palavras-chave por linha
+   - Exemplo: "O *FIM* DAS SENHAS\\nCHEGOU DE *VERDADE*"
+
+2. "caption": Legenda para o post (150-250 caracteres).
+   - Tom de conversa, como um amigo contando uma novidade
+   - Emojis estratégicos (máx 3)
+   - SEM hashtags
+   - Termine com uma pergunta curta e direta
+
+3. "hashtags": Exatamente 8 hashtags começando sempre com #fontedadica
+
+Responda APENAS JSON válido, sem markdown:
 {"title":"...","caption":"...","hashtags":"..."}`;
 
   const res = await fetch('/api/claude', {
@@ -620,14 +585,12 @@ Responda APENAS JSON válido sem markdown:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiKey: cfg.key, prompt })
   });
-
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = await res.json().catch(()=>({}));
     throw new Error(err.error?.message || `HTTP ${res.status}`);
   }
-
   const data = await res.json();
-  const raw = data.content[0].text.trim().replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+  const raw = data.content[0].text.trim().replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
   return JSON.parse(raw);
 }
 
@@ -641,49 +604,48 @@ function showResult(post) {
 }
 
 function formatTitle(title) {
-  return title.replace(/\*([^*]+)\*/g, '<span style="color:var(--neon)">$1</span>').replace(/\\n/g, '<br>');
+  return title.replace(/\*([^*]+)\*/g,'<span style="color:var(--neon)">$1</span>').replace(/\\n/g,'<br>');
 }
 
-// ── Canvas render ───────────────────────────────────────────
+// ── Canvas ─────────────────────────────────────────────────
 function renderCard(post) {
   const canvas = document.getElementById('cardCanvas');
   const ctx = canvas.getContext('2d');
   const S = 1200;
   ctx.clearRect(0, 0, S, S);
 
-  // Background image (cover-fit)
+  // Imagem de fundo (cover)
   if (bgImageEl) {
-    const scale = Math.max(S / bgImageEl.width, S / bgImageEl.height);
-    const w = bgImageEl.width * scale, h = bgImageEl.height * scale;
-    ctx.drawImage(bgImageEl, (S - w) / 2, (S - h) / 2, w, h);
+    const scale = Math.max(S/bgImageEl.width, S/bgImageEl.height);
+    const w = bgImageEl.width*scale, h = bgImageEl.height*scale;
+    ctx.drawImage(bgImageEl, (S-w)/2, (S-h)/2, w, h);
   } else {
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(0, 0, S, S);
   }
 
-  // Black gradient overlay at bottom
-  const grad = ctx.createLinearGradient(0, S * 0.3, 0, S);
+  // Gradiente agressivo: cobre 70% de baixo para cima
+  const grad = ctx.createLinearGradient(0, S * 0.08, 0, S * 0.65);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(0.18, 'rgba(0,0,0,0.55)');
-  grad.addColorStop(0.5, 'rgba(0,0,0,0.88)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.97)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.82)');
+  grad.addColorStop(1, 'rgba(0,0,0,1)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, S, S);
 
-  // Draw title text
+  // Bloco sólido na parte de baixo — garante que nenhum texto original apareça
+  ctx.fillStyle = 'rgba(0,0,0,1)';
+  ctx.fillRect(0, Math.round(S * 0.55), S, S);
+
+  // Título
   const lines = post.title.split(/\\n|\n/).filter(Boolean);
-  const logoH = 72; // reserve space for logo badge below text
-  const fontSize = lines.length === 1 ? 112 : lines.length === 2 ? 96 : 80;
-  const lineH = fontSize * 1.18;
+  const fontSize = lines.length === 1 ? 116 : 96;
+  const lineH = fontSize * 1.2;
   const totalTextH = lines.length * lineH;
-  const startY = S - logoH - 32 - totalTextH;
+  const startY = S - 56 - totalTextH;
 
   lines.forEach((line, i) => {
-    drawLine(ctx, line.trim(), 60, startY + i * lineH + lineH / 2, fontSize, S - 120);
+    drawLine(ctx, line.trim(), 56, startY + i * lineH + lineH / 2, fontSize, S - 112);
   });
-
-  // Brand logo badge
-  drawBrandBadge(ctx, S);
 
   document.getElementById('previewEmpty').style.display = 'none';
   canvas.style.display = 'block';
@@ -714,71 +676,14 @@ function parseSegs(text) {
   const rx = /\*([^*]+)\*|([^*]+)/g;
   let m;
   while ((m = rx.exec(text)) !== null) {
-    if (m[1]) out.push({ t: m[1], h: true });
-    else if (m[2]) out.push({ t: m[2], h: false });
+    if (m[1]) out.push({t:m[1],h:true});
+    else if (m[2]) out.push({t:m[2],h:false});
   }
   return out;
 }
 
-function drawBrandBadge(ctx, S) {
-  const bw = 280, bh = 56, br = 10;
-  const bx = S - bw - 28, by = S - bh - 20;
 
-  // Shadow
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.9)';
-  ctx.shadowBlur = 18;
-
-  // Background pill
-  ctx.fillStyle = 'rgba(0,0,0,0.78)';
-  rrect(ctx, bx, by, bw, bh, br);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Green border
-  ctx.strokeStyle = '#39FF14';
-  ctx.lineWidth = 2;
-  rrect(ctx, bx, by, bw, bh, br);
-  ctx.stroke();
-
-  // Logo circle
-  const cx = bx + 34, cy = by + bh / 2, cr = 20;
-  ctx.fillStyle = '#39FF14';
-  ctx.beginPath();
-  ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#000';
-  ctx.font = '900 15px "Barlow Condensed", sans-serif';
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'center';
-  ctx.fillText('FD', cx, cy + 1);
-
-  // Brand name text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '700 26px "Barlow Condensed", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('FONTE DA DICA', bx + 64, by + bh / 2);
-
-  ctx.restore();
-}
-
-function rrect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
-}
-
-// ── Download ────────────────────────────────────────────────
+// ── Download ───────────────────────────────────────────────
 function downloadCard() {
   const src = document.getElementById('cardCanvas');
   const exp = document.getElementById('exportCanvas');
@@ -787,24 +692,22 @@ function downloadCard() {
   a.download = `fontedadica_${Date.now()}.png`;
   a.href = exp.toDataURL('image/png', 1.0);
   a.click();
-  toast('Download iniciado', 'ok');
+  toast('Download iniciado','ok');
 }
 
-// ── Copy ────────────────────────────────────────────────────
 async function copyCaption() {
   if (!currentPost) return;
   await navigator.clipboard.writeText(currentPost.caption + '\n\n' + currentPost.hashtags);
-  toast('Legenda copiada!', 'ok');
+  toast('Legenda copiada!','ok');
 }
 
 async function copyAll() {
   if (!currentPost) return;
   await navigator.clipboard.writeText(currentPost.caption + '\n\n' + currentPost.hashtags);
-  toast('Copiado!', 'ok');
+  toast('Copiado!','ok');
 }
 
-// ── UI helpers ───────────────────────────────────────────────
-function setLoading(on, msg = '') {
+function setLoading(on, msg='') {
   document.getElementById('statusText').textContent = msg;
   document.getElementById('statusBar').classList.toggle('visible', on);
 }
@@ -817,21 +720,20 @@ function openCfg() {
   document.getElementById('cfgOverlay').classList.add('open');
 }
 function closeCfg() { document.getElementById('cfgOverlay').classList.remove('open'); }
-function closeCfgOutside(e) { if (e.target === document.getElementById('cfgOverlay')) closeCfg(); }
+function closeCfgOutside(e) { if (e.target===document.getElementById('cfgOverlay')) closeCfg(); }
 function saveCfg() {
   cfg.key = document.getElementById('cfgKey').value.trim();
   cfg.tom = document.getElementById('cfgTom').value.trim();
   cfg.fbToken = document.getElementById('cfgFbToken').value.trim();
   cfg.fbPageId = document.getElementById('cfgFbPageId').value.trim();
   localStorage.setItem('fd3_cfg', JSON.stringify(cfg));
-  closeCfg();
-  toast('Salvo', 'ok');
+  closeCfg(); toast('Salvo','ok');
 }
 
-function toast(msg, type = '') {
+function toast(msg, type='') {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.className = 'toast show ' + type;
+  el.className = 'toast show '+type;
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 3200);
 }
