@@ -625,7 +625,7 @@ function renderCard(post) {
   }
 
   // Gradiente: imagem visível até ~40%, escurece até 68%, sólido a partir daí
-  const grad = ctx.createLinearGradient(0, S * 0.35, 0, S * 0.70);
+  const grad = ctx.createLinearGradient(0, S * 0.50, 0, S * 0.70);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
   grad.addColorStop(0.55, 'rgba(0,0,0,0.88)');
   grad.addColorStop(1, 'rgba(0,0,0,1)');
