@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fonte da Dica — Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --neon:#39FF14;
+  --neon-glow:rgba(57,255,20,0.1);
+  --neon-border:rgba(57,255,20,0.3);
+  --bg:#070707;
+  --surface:#111;
+  --surface2:#181818;
+  --surface3:#202020;
+  --border:#252525;
+  --border2:#2e2e2e;
+  --text:#f0f0f0;
+  --muted:#666;
+  --muted2:#3a3a3a;
+  --red:#ff4444;
+  --yellow:#FFD700;
+}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:rgba(7,7,7,0.98);position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;background:var(--neon);border-radius:8px;display:grid;place-items:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#000;flex-shrink:0}
+.logo-text{font-size:14px;font-weight:700}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.cfg-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--muted);padding:7px 14px;border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.cfg-btn:hover{border-color:var(--neon);color:var(--neon)}
+.workspace{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;width:100%;margin:0 auto;padding:28px}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:700}
+.panel-body{padding:20px;flex:1;display:flex;flex-direction:column;gap:14px}
+.tabs{display:flex;gap:6px;background:var(--surface2);padding:5px;border-radius:9px}
+.tab{flex:1;background:none;border:none;color:var(--muted);padding:8px 6px;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--surface3);color:var(--text);border:1px solid var(--border2)}
+.tab-pane{display:flex;flex-direction:column;gap:12px}
+.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:24px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;background:var(--surface2);min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--neon);background:var(--neon-glow)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;opacity:.4}
+.upload-text{font-size:12px;color:var(--muted);line-height:1.5}
+.upload-text strong{color:var(--neon);display:block;font-size:11px;margin-top:3px}
+.upload-preview{width:100%;border-radius:8px;display:none;max-height:240px;object-fit:cover}
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+textarea,input[type=text],input[type=password],input[type=datetime-local]{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;padding:10px 14px;border-radius:8px;outline:none;transition:border-color .15s;width:100%;resize:vertical}
+textarea:focus,input:focus{border-color:var(--neon)}
+input[type=datetime-local]{color-scheme:dark}
+textarea{min-height:90px;line-height:1.6}
+.btn-fetch{background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-fetch:hover{border-color:var(--neon);color:var(--neon)}
+.btn-fetch:disabled{opacity:.4;cursor:not-allowed}
+.fetch-result{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px}
+.fetch-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neon);margin-bottom:6px}
+.fetch-text{font-size:12px;color:#aaa;line-height:1.6;max-height:90px;overflow-y:auto}
+.btn-primary{background:var(--neon);color:#000;border:none;padding:13px 20px;border-radius:9px;width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:hover{opacity:.88}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.btn-fb{background:#1877F2;color:#fff;border:none;padding:13px 20px;border-radius:9px;width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-fb:hover{opacity:.88}
+.btn-fb:active{transform:scale(.98)}
+.btn-fb:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:10px 16px;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+.btn-ghost:hover{border-color:#444;color:var(--text)}
+.btn-download{background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:12px 20px;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-download:hover{background:var(--surface2);border-color:#444}
+.preview-wrap{aspect-ratio:1;background:var(--surface2);border-radius:10px;overflow:hidden;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative}
+.preview-wrap canvas{width:100%;height:100%;display:block}
+.preview-empty{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted2);font-size:13px;text-align:center;padding:20px}
+.preview-empty-icon{font-size:40px;opacity:.2}
+.ai-result{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px;display:none}
+.ai-result.visible{display:block}
+.ai-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--neon);margin-bottom:8px}
+.ai-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;line-height:1.2;color:var(--text);margin-bottom:10px}
+.ai-caption{font-size:13px;color:#aaa;line-height:1.6;margin-bottom:8px}
+.ai-tags{font-size:11px;color:var(--neon);opacity:.7}
+.caption-actions{display:flex;gap:8px;margin-top:10px}
+.btn-copy{background:var(--surface3);border:1px solid var(--border2);color:var(--muted);padding:6px 12px;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-copy:hover{border-color:#444;color:var(--text)}
+.status-bar{display:none;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--neon-border);border-radius:8px;padding:10px 14px;font-size:13px}
+.status-bar.visible{display:flex}
+.spin{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--neon);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:min(440px,92vw);display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;line-height:1}
+.save-btn{background:var(--neon);color:#000;border:none;padding:12px;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+.divider{height:1px;background:var(--border);margin:4px 0}
+.toast{position:fixed;bottom:20px;right:20px;z-index:200;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:9px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .25s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--neon);color:var(--neon)}
+.toast.err{border-color:var(--red);color:var(--red)}
+/* Schedule queue */
+.schedule-row{display:flex;gap:8px;align-items:stretch}
+.schedule-row input{flex:1}
+.queue-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+.queue-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.queue-item-info{flex:1;min-width:0}
+.queue-item-time{font-size:12px;color:var(--neon);font-weight:700}
+.queue-item-title{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.queue-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.queue-badge.pending{background:var(--surface3);color:var(--muted)}
+.queue-badge.posting{background:var(--neon-glow);color:var(--neon)}
+.queue-badge.done{background:#1a1a1a;color:#444}
+.queue-badge.error{background:rgba(255,68,68,0.1);color:var(--red)}
+.queue-del{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:18px;flex-shrink:0;line-height:1;padding:0 2px}
+.queue-del:hover{color:var(--red)}
+.queue-empty{text-align:center;padding:16px;color:var(--muted2);font-size:13px}
+.cfg-section-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">FD</div>
+    <div>
+      <div class="logo-text">Fonte da Dica</div>
+      <div class="logo-sub">Studio de conteúdo</div>
+    </div>
+  </div>
+  <button class="cfg-btn" onclick="openCfg()">⚙ Configurações</button>
+</header>
+
+<div class="workspace">
+  <!-- LEFT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">1. Imagem de fundo</div></div>
+      <div class="panel-body">
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this)">
+          <div class="upload-icon">🖼</div>
+          <div class="upload-text">Arraste a imagem do post aqui<strong>JPG, PNG, WEBP</strong></div>
+        </div>
+        <img id="uploadPreview" class="upload-preview">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">2. Fonte do conteúdo</div></div>
+      <div class="panel-body">
+        <div class="tabs">
+          <button class="tab active" id="tab-link" onclick="setTab('link')">🔗 Link do Facebook</button>
+          <button class="tab" id="tab-text" onclick="setTab('text')">📝 Colar texto</button>
+          <button class="tab" id="tab-tema" onclick="setTab('tema')">💡 Tema livre</button>
+        </div>
+
+        <div class="tab-pane" id="pane-link">
+          <div class="field">
+            <div class="label">Link do post no Facebook</div>
+            <input type="text" id="fbLink" placeholder="https://www.facebook.com/NomeDaPagina/posts/...">
+          </div>
+          <button class="btn-fetch" id="fetchBtn" onclick="fetchFbPost()">⬇ Buscar texto do post</button>
+          <div id="fetchResult" style="display:none">
+            <div class="fetch-result">
+              <div class="fetch-label">Texto encontrado</div>
+              <div class="fetch-text" id="fetchText"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-text" style="display:none">
+          <div class="field">
+            <div class="label">Cole a legenda do post original</div>
+            <textarea id="originalText" rows="5" placeholder="Cole aqui o texto do post que quer recriar no estilo @fontedadica..."></textarea>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-tema" style="display:none">
+          <div class="field">
+            <div class="label">Descreva o tema</div>
+            <textarea id="temaText" rows="4" placeholder="Ex: Apple e SpaceX desenvolvendo internet via satélite direto no iPhone sem operadoras..."></textarea>
+          </div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+          <div class="spin"></div>
+          <span id="statusText">Processando...</span>
+        </div>
+
+        <button class="btn-primary" id="genBtn" onclick="generate()">
+          <span>⚡</span> Gerar post no estilo @fontedadica
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Preview do card</div>
+        <span style="font-size:11px;color:var(--muted)">1200×1200px</span>
+      </div>
+      <div class="panel-body">
+        <div class="preview-wrap">
+          <div class="preview-empty" id="previewEmpty">
+            <div class="preview-empty-icon">🎨</div>
+            <div>O card aparece aqui</div>
+          </div>
+          <canvas id="cardCanvas" width="1200" height="1200" style="display:none"></canvas>
+        </div>
+        <button class="btn-download" id="downloadBtn" style="display:none" onclick="downloadCard()">
+          ⬇ Baixar card 1200×1200px
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Legenda gerada</div></div>
+      <div class="panel-body">
+        <div class="ai-result" id="aiResult">
+          <div class="ai-label">Título do card</div>
+          <div class="ai-title" id="aiTitle"></div>
+          <div class="divider"></div>
+          <div style="margin-top:10px">
+            <div class="ai-label">Legenda do post</div>
+            <div class="ai-caption" id="aiCaption"></div>
+            <div class="ai-tags" id="aiTags"></div>
+            <div class="caption-actions">
+              <button class="btn-copy" onclick="copyCaption()">📋 Copiar legenda</button>
+              <button class="btn-copy" onclick="copyAll()">📋 Copiar tudo</button>
+            </div>
+          </div>
+        </div>
+        <div id="resultEmpty" style="color:var(--muted2);font-size:13px;text-align:center;padding:20px 0">
+          A legenda gerada aparece aqui
+        </div>
+        <button class="btn-ghost" id="regenBtn" style="display:none" onclick="generate()">↺ Regenerar</button>
+      </div>
+    </div>
+
+    <!-- PUBLICAR PANEL -->
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Publicar no Facebook</div></div>
+      <div class="panel-body">
+        <button class="btn-fb" id="fbPostBtn" onclick="postNow()">
+          📤 Publicar agora
+        </button>
+        <div class="divider"></div>
+        <div class="label">Agendar publicação</div>
+        <div class="schedule-row">
+          <input type="datetime-local" id="scheduleTime">
+          <button class="btn-fetch" onclick="addToQueue()">+ Fila</button>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:8px">Fila de posts <span id="queueCount" style="color:var(--neon)"></span></div>
+          <div class="queue-list" id="queueList">
+            <div class="queue-empty" id="queueEmpty">Nenhum post na fila</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="overlay" id="cfgOverlay" onclick="closeCfgOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Configurações</div>
+      <button class="modal-close" onclick="closeCfg()">×</button>
+    </div>
+    <div class="field">
+      <div class="label">Anthropic API Key</div>
+      <input type="password" id="cfgKey" placeholder="sk-ant-...">
+    </div>
+    <div class="field">
+      <div class="label">Tom do canal (opcional)</div>
+      <textarea id="cfgTom" rows="2" placeholder="Canal de tech e inovação, linguagem direta..."></textarea>
+    </div>
+    <div class="divider"></div>
+    <div class="cfg-section-title">Facebook — Publicação automática</div>
+    <div class="field">
+      <div class="label">Page Access Token</div>
+      <input type="password" id="cfgFbToken" placeholder="EAAxxxxx...">
+      <span style="font-size:11px;color:var(--muted);margin-top:4px">Gere em developers.facebook.com → Graph API Explorer → permissão pages_manage_posts</span>
+    </div>
+    <div class="field">
+      <div class="label">Page ID</div>
+      <input type="text" id="cfgFbPageId" placeholder="61575160303174">
+    </div>
+    <button class="save-btn" onclick="saveCfg()">Salvar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="exportCanvas" width="1200" height="1200" style="display:none"></canvas>
+
+<script>
+let cfg = {
+  key: '',
+  tom: 'Canal de curiosidades e tecnologia. Linguagem direta, acessível, sem termos técnicos complexos. Público brasileiro curioso por novidades.',
+  fbToken: '',
+  fbPageId: '61575160303174'
+};
+try { Object.assign(cfg, JSON.parse(localStorage.getItem('fd3_cfg') || '{}')); } catch(e){}
+
+let bgImageEl = null;
+let currentPost = null;
+let activeTab = 'link';
+
+// ── Schedule queue ──────────────────────────────────────────
+let queue = [];
+try { queue = JSON.parse(localStorage.getItem('fd3_queue') || '[]'); } catch(e){}
+
+// Set datetime-local min to now
+(function setDateMin() {
+  const el = document.getElementById('scheduleTime');
+  const now = new Date(Date.now() + 5 * 60000); // +5min
+  el.min = now.toISOString().slice(0, 16);
+  el.value = now.toISOString().slice(0, 16);
+})();
+
+function saveQueue() {
+  try { localStorage.setItem('fd3_queue', JSON.stringify(queue)); } catch(e) {}
+}
+
+function renderQueue() {
+  const list = document.getElementById('queueList');
+  const empty = document.getElementById('queueEmpty');
+  const countEl = document.getElementById('queueCount');
+  const pending = queue.filter(q => q.status !== 'done');
+
+  countEl.textContent = pending.length ? `(${pending.length})` : '';
+
+  list.querySelectorAll('.queue-item').forEach(el => el.remove());
+
+  if (!pending.length) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  pending.forEach(item => {
+    const d = new Date(item.time);
+    const timeStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' +
+                    d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const titleClean = (item.post.title || '').replace(/\*([^*]+)\*/g, '$1').replace(/\\n|\n/g, ' ');
+    const div = document.createElement('div');
+    div.className = 'queue-item';
+    div.id = 'qi_' + item.id;
+    const badgeMap = { pending: 'aguardando', posting: 'publicando…', done: 'publicado', error: 'erro' };
+    div.innerHTML = `
+      <div class="queue-item-info">
+        <div class="queue-item-time">${timeStr}</div>
+        <div class="queue-item-title">${titleClean}</div>
+      </div>
+      <span class="queue-badge ${item.status}">${badgeMap[item.status] || item.status}</span>
+      ${item.status !== 'posting' ? `<button class="queue-del" onclick="removeFromQueue(${item.id})" title="Remover">×</button>` : ''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addToQueue() {
+  if (!currentPost) { toast('Gere o post primeiro', 'err'); return; }
+  const timeInput = document.getElementById('scheduleTime').value;
+  if (!timeInput) { toast('Selecione data e hora', 'err'); return; }
+  const schedTime = new Date(timeInput).getTime();
+  if (schedTime <= Date.now()) { toast('Escolha um horário futuro', 'err'); return; }
+  const canvas = document.getElementById('cardCanvas');
+  if (canvas.style.display === 'none') { toast('Gere o card visual primeiro', 'err'); return; }
+
+  setLoading(true, 'Adicionando à fila...');
+  setTimeout(() => {
+    try {
+      const imageData = canvas.toDataURL('image/jpeg', 0.88);
+      queue.push({ id: Date.now(), time: schedTime, post: { ...currentPost }, imageData, status: 'pending' });
+      queue.sort((a, b) => a.time - b.time);
+      saveQueue();
+      renderQueue();
+      toast('Adicionado à fila!', 'ok');
+    } finally {
+      setLoading(false);
+    }
+  }, 80);
+}
+
+function removeFromQueue(id) {
+  queue = queue.filter(q => q.id !== id);
+  saveQueue();
+  renderQueue();
+}
+
+function dataURLToBlob(dataURL) {
+  const [head, data] = dataURL.split(',');
+  const mime = head.match(/:(.*?);/)[1];
+  const bin = atob(data);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+async function publishItem(item) {
+  if (!cfg.fbToken || !cfg.fbPageId) throw new Error('Configure Facebook Token e Page ID em ⚙');
+  const blob = dataURLToBlob(item.imageData);
+  const form = new FormData();
+  form.append('source', blob, 'fontedadica.jpg');
+  form.append('caption', item.post.caption + '\n\n' + item.post.hashtags);
+  form.append('access_token', cfg.fbToken);
+  const res = await fetch(`https://graph.facebook.com/v19.0/${cfg.fbPageId}/photos`, { method: 'POST', body: form });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data;
+}
+
+// Check queue every 30s
+setInterval(async () => {
+  const now = Date.now();
+  for (const item of queue) {
+    if (item.status !== 'pending') continue;
+    if (item.time > now + 30000) continue;
+    item.status = 'posting';
+    renderQueue();
+    try {
+      await publishItem(item);
+      item.status = 'done';
+      toast('✅ Post agendado publicado!', 'ok');
+    } catch(e) {
+      item.status = 'error';
+      toast('Erro no agendado: ' + e.message, 'err');
+    }
+    saveQueue();
+    renderQueue();
+  }
+}, 30000);
+
+async function postNow() {
+  if (!currentPost) { toast('Gere o post primeiro', 'err'); return; }
+  const canvas = document.getElementById('cardCanvas');
+  if (canvas.style.display === 'none') { toast('Gere o card visual primeiro', 'err'); return; }
+  if (!cfg.fbToken || !cfg.fbPageId) { toast('Configure Facebook em ⚙', 'err'); openCfg(); return; }
+
+  const btn = document.getElementById('fbPostBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Publicando...';
+
+  try {
+    const imageData = canvas.toDataURL('image/jpeg', 0.92);
+    await publishItem({ imageData, post: currentPost });
+    toast('✅ Publicado no Facebook!', 'ok');
+  } catch(e) {
+    toast('Erro: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 Publicar agora';
+  }
+}
+
+renderQueue();
+
+// ── Tabs ────────────────────────────────────────────────────
+function setTab(tab) {
+  activeTab = tab;
+  ['link', 'text', 'tema'].forEach(t => {
+    document.getElementById('pane-' + t).style.display = t === tab ? 'flex' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// ── Image upload ────────────────────────────────────────────
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const preview = document.getElementById('uploadPreview');
+  preview.src = url;
+  preview.style.display = 'block';
+  const img = new Image();
+  img.onload = () => { bgImageEl = img; if (currentPost) renderCard(currentPost); };
+  img.src = url;
+  toast('Imagem carregada', 'ok');
+}
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file?.type.startsWith('image/')) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    handleFile(document.getElementById('fileInput'));
+  }
+});
+
+// ── Facebook fetch ──────────────────────────────────────────
+async function fetchFbPost() {
+  const link = document.getElementById('fbLink').value.trim();
+  if (!link) { toast('Cole o link do post', 'err'); return; }
+  if (!cfg.fbToken) { toast('Configure o Facebook Token em ⚙', 'err'); openCfg(); return; }
+
+  const btn = document.getElementById('fetchBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando...';
+
+  try {
+    const postId = extractPostId(link);
+    if (!postId) throw new Error('Formato de link não reconhecido. Use o link direto do post.');
+
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${postId}?fields=message,story,full_picture&access_token=${cfg.fbToken}`
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const text = data.message || data.story || '';
+    if (!text) throw new Error('Post sem texto ou sem permissão de acesso');
+
+    document.getElementById('fetchText').textContent = text;
+    document.getElementById('fetchResult').style.display = 'block';
+    if (data.full_picture && !bgImageEl) loadImageFromUrl(data.full_picture);
+    toast('Conteúdo encontrado!', 'ok');
+  } catch(e) {
+    toast('Erro: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇ Buscar texto do post';
+  }
+}
+
+function extractPostId(url) {
+  let m;
+  m = url.match(/story_fbid=(\d+).*?[&?]id=(\d+)/);
+  if (m) return `${m[2]}_${m[1]}`;
+  m = url.match(/[&?]id=(\d+).*?story_fbid=(\d+)/);
+  if (m) return `${m[1]}_${m[2]}`;
+  m = url.match(/\/posts\/(\d+)/);
+  if (m) return m[1];
+  m = url.match(/fbid=(\d+)/);
+  if (m) return m[1];
+  m = url.match(/\/(\d{10,})/);
+  if (m) return m[1];
+  return null;
+}
+
+function loadImageFromUrl(url) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    bgImageEl = img;
+    const p = document.getElementById('uploadPreview');
+    p.src = url; p.style.display = 'block';
+    toast('Imagem do post carregada', 'ok');
+  };
+  img.src = url;
+}
+
+function getInputText() {
+  if (activeTab === 'link') {
+    const fetched = document.getElementById('fetchText').textContent;
+    if (fetched) return fetched;
+    const link = document.getElementById('fbLink').value.trim();
+    return link ? `Link do post: ${link}` : '';
+  }
+  if (activeTab === 'text') return document.getElementById('originalText').value.trim();
+  if (activeTab === 'tema') return document.getElementById('temaText').value.trim();
+  return '';
+}
+
+// ── Generate ────────────────────────────────────────────────
+async function generate() {
+  const text = getInputText();
+  if (!text) { toast('Adicione o conteúdo ou tema', 'err'); return; }
+  if (!cfg.key) { toast('Configure a API Key ⚙', 'err'); openCfg(); return; }
+
+  setLoading(true, 'Gerando com IA...');
+  document.getElementById('genBtn').disabled = true;
+
+  try {
+    const result = await callClaude(text);
+    currentPost = result;
+    showResult(result);
+    if (bgImageEl) renderCard(result);
+    else toast('Adicione a imagem para gerar o card visual', 'err');
+  } catch(e) {
+    toast('Erro: ' + e.message, 'err');
+  } finally {
+    setLoading(false);
+    document.getElementById('genBtn').disabled = false;
+  }
+}
+
+async function callClaude(originalText) {
+  const prompt = `Você é o criador de conteúdo do canal @fontedadica no Facebook.
+Tom do canal: ${cfg.tom}
+
+Conteúdo/tema para transformar em post:
+---
+${originalText}
+---
+
+Crie um post com:
+1. "title": Título impactante para o card visual. MÁXIMO 3 linhas. CAIXA ALTA. Use *palavra* para marcar 2-3 palavras-chave em VERDE NEON. Separe linhas com \\n. Ex: "NA ITÁLIA *PETS* DOENTES\\nSÃO *EMERGÊNCIA* FAMILIAR"
+2. "caption": Legenda Facebook (200-300 caracteres). Tom conversacional, emojis, sem hashtags. Termine com pergunta ao leitor.
+3. "hashtags": 8 hashtags, sempre começando com #fontedadica
+
+Responda APENAS JSON válido sem markdown:
+{"title":"...","caption":"...","hashtags":"..."}`;
+
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiKey: cfg.key, prompt })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const raw = data.content[0].text.trim().replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+  return JSON.parse(raw);
+}
+
+function showResult(post) {
+  document.getElementById('aiTitle').innerHTML = formatTitle(post.title);
+  document.getElementById('aiCaption').textContent = post.caption;
+  document.getElementById('aiTags').textContent = post.hashtags;
+  document.getElementById('aiResult').classList.add('visible');
+  document.getElementById('resultEmpty').style.display = 'none';
+  document.getElementById('regenBtn').style.display = 'block';
+}
+
+function formatTitle(title) {
+  return title.replace(/\*([^*]+)\*/g, '<span style="color:var(--neon)">$1</span>').replace(/\\n/g, '<br>');
+}
+
+// ── Canvas render ───────────────────────────────────────────
+function renderCard(post) {
+  const canvas = document.getElementById('cardCanvas');
+  const ctx = canvas.getContext('2d');
+  const S = 1200;
+  ctx.clearRect(0, 0, S, S);
+
+  // Background image (cover-fit)
+  if (bgImageEl) {
+    const scale = Math.max(S / bgImageEl.width, S / bgImageEl.height);
+    const w = bgImageEl.width * scale, h = bgImageEl.height * scale;
+    ctx.drawImage(bgImageEl, (S - w) / 2, (S - h) / 2, w, h);
+  } else {
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, S, S);
+  }
+
+  // Black gradient overlay at bottom
+  const grad = ctx.createLinearGradient(0, S * 0.3, 0, S);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.18, 'rgba(0,0,0,0.55)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.88)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.97)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, S, S);
+
+  // Draw title text
+  const lines = post.title.split(/\\n|\n/).filter(Boolean);
+  const logoH = 72; // reserve space for logo badge below text
+  const fontSize = lines.length === 1 ? 112 : lines.length === 2 ? 96 : 80;
+  const lineH = fontSize * 1.18;
+  const totalTextH = lines.length * lineH;
+  const startY = S - logoH - 32 - totalTextH;
+
+  lines.forEach((line, i) => {
+    drawLine(ctx, line.trim(), 60, startY + i * lineH + lineH / 2, fontSize, S - 120);
+  });
+
+  // Brand logo badge
+  drawBrandBadge(ctx, S);
+
+  document.getElementById('previewEmpty').style.display = 'none';
+  canvas.style.display = 'block';
+  document.getElementById('downloadBtn').style.display = 'flex';
+}
+
+function drawLine(ctx, text, x, y, fs, maxW) {
+  const segs = parseSegs(text);
+  ctx.font = `900 ${fs}px 'Barlow Condensed', sans-serif`;
+  let total = 0;
+  segs.forEach(s => { total += ctx.measureText(s.t).width; });
+  const scale = total > maxW ? maxW / total : 1;
+  const efs = fs * scale;
+  ctx.font = `900 ${efs}px 'Barlow Condensed', sans-serif`;
+  let tw = 0;
+  segs.forEach(s => { tw += ctx.measureText(s.t).width; });
+  let cx = x + (maxW - tw) / 2;
+  ctx.textBaseline = 'middle';
+  segs.forEach(s => {
+    ctx.fillStyle = s.h ? '#39FF14' : '#ffffff';
+    ctx.fillText(s.t, cx, y);
+    cx += ctx.measureText(s.t).width;
+  });
+}
+
+function parseSegs(text) {
+  const out = [];
+  const rx = /\*([^*]+)\*|([^*]+)/g;
+  let m;
+  while ((m = rx.exec(text)) !== null) {
+    if (m[1]) out.push({ t: m[1], h: true });
+    else if (m[2]) out.push({ t: m[2], h: false });
+  }
+  return out;
+}
+
+function drawBrandBadge(ctx, S) {
+  const bw = 280, bh = 56, br = 10;
+  const bx = S - bw - 28, by = S - bh - 20;
+
+  // Shadow
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 18;
+
+  // Background pill
+  ctx.fillStyle = 'rgba(0,0,0,0.78)';
+  rrect(ctx, bx, by, bw, bh, br);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Green border
+  ctx.strokeStyle = '#39FF14';
+  ctx.lineWidth = 2;
+  rrect(ctx, bx, by, bw, bh, br);
+  ctx.stroke();
+
+  // Logo circle
+  const cx = bx + 34, cy = by + bh / 2, cr = 20;
+  ctx.fillStyle = '#39FF14';
+  ctx.beginPath();
+  ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#000';
+  ctx.font = '900 15px "Barlow Condensed", sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillText('FD', cx, cy + 1);
+
+  // Brand name text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 26px "Barlow Condensed", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('FONTE DA DICA', bx + 64, by + bh / 2);
+
+  ctx.restore();
+}
+
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ── Download ────────────────────────────────────────────────
+function downloadCard() {
+  const src = document.getElementById('cardCanvas');
+  const exp = document.getElementById('exportCanvas');
+  exp.getContext('2d').drawImage(src, 0, 0);
+  const a = document.createElement('a');
+  a.download = `fontedadica_${Date.now()}.png`;
+  a.href = exp.toDataURL('image/png', 1.0);
+  a.click();
+  toast('Download iniciado', 'ok');
+}
+
+// ── Copy ────────────────────────────────────────────────────
+async function copyCaption() {
+  if (!currentPost) return;
+  await navigator.clipboard.writeText(currentPost.caption + '\n\n' + currentPost.hashtags);
+  toast('Legenda copiada!', 'ok');
+}
+
+async function copyAll() {
+  if (!currentPost) return;
+  await navigator.clipboard.writeText(currentPost.caption + '\n\n' + currentPost.hashtags);
+  toast('Copiado!', 'ok');
+}
+
+// ── UI helpers ───────────────────────────────────────────────
+function setLoading(on, msg = '') {
+  document.getElementById('statusText').textContent = msg;
+  document.getElementById('statusBar').classList.toggle('visible', on);
+}
+
+function openCfg() {
+  document.getElementById('cfgKey').value = cfg.key;
+  document.getElementById('cfgTom').value = cfg.tom;
+  document.getElementById('cfgFbToken').value = cfg.fbToken;
+  document.getElementById('cfgFbPageId').value = cfg.fbPageId;
+  document.getElementById('cfgOverlay').classList.add('open');
+}
+function closeCfg() { document.getElementById('cfgOverlay').classList.remove('open'); }
+function closeCfgOutside(e) { if (e.target === document.getElementById('cfgOverlay')) closeCfg(); }
+function saveCfg() {
+  cfg.key = document.getElementById('cfgKey').value.trim();
+  cfg.tom = document.getElementById('cfgTom').value.trim();
+  cfg.fbToken = document.getElementById('cfgFbToken').value.trim();
+  cfg.fbPageId = document.getElementById('cfgFbPageId').value.trim();
+  localStorage.setItem('fd3_cfg', JSON.stringify(cfg));
+  closeCfg();
+  toast('Salvo', 'ok');
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+window.addEventListener('load', () => { if (!cfg.key) setTimeout(openCfg, 400); });
+</script>
+</body>
+</html>
